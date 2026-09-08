@@ -1,1 +1,468 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI 套利控制台</title>
 
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 16px;
+      min-height: 100vh;
+      background: #08111f;
+      color: #edf4ff;
+      font-family: Arial, "Microsoft YaHei", sans-serif;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 720px;
+      margin: 0 auto;
+    }
+
+    .header {
+      padding: 20px;
+      margin-bottom: 16px;
+      border-radius: 18px;
+      background: linear-gradient(135deg, #1b3b91, #19254c);
+    }
+
+    .header h1 {
+      margin: 0 0 8px;
+      font-size: 25px;
+    }
+
+    .header p {
+      margin: 0;
+      color: #c4d3f4;
+      font-size: 13px;
+    }
+
+    .card {
+      padding: 17px;
+      margin-bottom: 16px;
+      border: 1px solid #273758;
+      border-radius: 16px;
+      background: #111d32;
+    }
+
+    .card h2 {
+      margin: 0 0 14px;
+      font-size: 18px;
+    }
+
+    .status {
+      padding: 12px;
+      margin-bottom: 15px;
+      border-radius: 10px;
+      color: #ffd86b;
+      background: #382f16;
+      font-size: 14px;
+    }
+
+    .status.ok {
+      color: #75edaa;
+      background: #123824;
+    }
+
+    .status.error {
+      color: #ff9ba7;
+      background: #421c27;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .stat {
+      padding: 13px;
+      border-radius: 10px;
+      background: #192743;
+    }
+
+    .stat-label {
+      display: block;
+      margin-bottom: 6px;
+      color: #9aaaca;
+      font-size: 12px;
+    }
+
+    .stat-value {
+      font-size: 17px;
+      font-weight: bold;
+    }
+
+    label {
+      display: block;
+      margin: 12px 0 6px;
+      color: #b8c7e6;
+      font-size: 13px;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #3a4c70;
+      border-radius: 9px;
+      outline: none;
+      color: white;
+      background: #091323;
+      font-size: 14px;
+    }
+
+    input:focus {
+      border-color: #6e8dff;
+    }
+
+    button {
+      width: 100%;
+      min-height: 45px;
+      margin-top: 10px;
+      padding: 11px 14px;
+      border: none;
+      border-radius: 9px;
+      color: white;
+      background: #3867ed;
+      cursor: pointer;
+      font-size: 15px;
+    }
+
+    button:hover {
+      background: #4c78f3;
+    }
+
+    button:active {
+      transform: scale(.98);
+    }
+
+    button:disabled {
+      opacity: .55;
+      cursor: not-allowed;
+    }
+
+    button.warning {
+      background: #bd8730;
+    }
+
+    button.danger {
+      background: #c43e55;
+    }
+
+    button.secondary {
+      background: #465777;
+    }
+
+    .opportunity {
+      padding: 14px;
+      margin-top: 10px;
+      border-left: 4px solid #4b82ff;
+      border-radius: 8px;
+      background: #192945;
+    }
+
+    .opportunity strong {
+      color: #76a0ff;
+    }
+
+    .empty {
+      padding: 15px;
+      border-radius: 8px;
+      color: #9aaaca;
+      background: #0b1526;
+      text-align: center;
+    }
+
+    pre {
+      min-height: 110px;
+      max-height: 260px;
+      overflow-y: auto;
+      padding: 13px;
+      margin: 0;
+      border-radius: 9px;
+      color: #c8d5ed;
+      background: #07101d;
+      white-space: pre-wrap;
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    .footer {
+      padding: 5px;
+      color: #8291b0;
+      text-align: center;
+      font-size: 12px;
+    }
+
+    @media (max-width: 450px) {
+      body {
+        padding: 10px;
+      }
+
+      .header h1 {
+        font-size: 22px;
+      }
+
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="app">
+
+    <section class="header">
+      <h1>AI 套利控制台</h1>
+      <p>手机端交易监控与操作界面</p>
+    </section>
+
+    <section class="card">
+      <div id="status" class="status">
+        系统已启动，当前为模拟模式
+      </div>
+
+      <div class="grid">
+        <div class="stat">
+          <span class="stat-label">连接状态</span>
+          <span id="connection" class="stat-value">未连接</span>
+        </div>
+
+        <div class="stat">
+          <span class="stat-label">今日收益</span>
+          <span id="profit" class="stat-value">0.00 USDT</span>
+        </div>
+
+        <div class="stat">
+          <span class="stat-label">机会数量</span>
+          <span id="opportunityCount" class="stat-value">0</span>
+        </div>
+
+        <div class="stat">
+          <span class="stat-label">运行状态</span>
+          <span id="running" class="stat-value">等待操作</span>
+        </div>
+      </div>
+
+      <button id="scanButton">🔎 开始扫描</button>
+      <button id="balanceButton" class="secondary">💰 查询余额</button>
+      <button id="stopButton" class="danger">⛔ 全局急停</button>
+    </section>
+
+    <section class="card">
+      <h2>后台设置</h2>
+
+      <label for="backendUrl">后台地址（可选）</label>
+      <input
+        id="backendUrl"
+        type="url"
+        placeholder="https://your-backend.example.com"
+      >
+
+      <button id="saveButton" class="warning">
+        💾 保存后台地址
+      </button>
+
+      <p style="color:#93a2c2;font-size:12px;line-height:1.6;">
+        当前页面即使不填写后台地址，也可以使用模拟扫描和测试按钮。
+      </p>
+    </section>
+
+    <section class="card">
+      <h2>套利机会</h2>
+      <div id="opportunities">
+        <div class="empty">点击“开始扫描”查看模拟机会</div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>账户余额</h2>
+      <pre id="balance">尚未查询余额</pre>
+    </section>
+
+    <section class="card">
+      <h2>操作日志</h2>
+      <pre id="logs">系统日志已启动</pre>
+    </section>
+
+    <div class="footer">
+      AI Arbitrage Dashboard · Frontend Demo
+    </div>
+  </main>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+
+    const statusBox = $("status");
+    const connection = $("connection");
+    const profit = $("profit");
+    const opportunityCount = $("opportunityCount");
+    const running = $("running");
+    const opportunities = $("opportunities");
+    const balance = $("balance");
+    const logs = $("logs");
+    const backendUrl = $("backendUrl");
+
+    let isStopped = false;
+
+    function log(message) {
+      const time = new Date().toLocaleTimeString();
+      logs.textContent =
+        "[" + time + "] " + message + "\n" + logs.textContent;
+    }
+
+    function setStatus(message, type) {
+      statusBox.textContent = message;
+      statusBox.className = "status";
+
+      if (type) {
+        statusBox.classList.add(type);
+      }
+    }
+
+    function setButtonLoading(button, loadingText, normalText) {
+      button.disabled = true;
+      button.textContent = loadingText;
+
+      return function finish() {
+        button.disabled = false;
+        button.textContent = normalText;
+      };
+    }
+
+    $("saveButton").addEventListener("click", function () {
+      const url = backendUrl.value.trim();
+
+      if (url && !url.startsWith("http")) {
+        setStatus("后台地址格式不正确", "error");
+        log("保存失败：地址必须以 http:// 或 https:// 开头");
+        return;
+      }
+
+      localStorage.setItem("backendUrl", url);
+
+      connection.textContent = url ? "地址已保存" : "模拟模式";
+      setStatus("后台地址保存成功", "ok");
+      log(url ? "已保存后台地址：" + url : "已切换为模拟模式");
+    });
+
+    $("scanButton").addEventListener("click", function () {
+      if (isStopped) {
+        setStatus("系统已经急停，请刷新页面后再操作", "error");
+        log("扫描失败：系统处于急停状态");
+        return;
+      }
+
+      const finish = setButtonLoading(
+        $("scanButton"),
+        "扫描中……",
+        "🔎 开始扫描"
+      );
+
+      running.textContent = "扫描中";
+      setStatus("正在扫描市场机会……");
+      log("开始扫描套利机会");
+
+      setTimeout(function () {
+        const data = [
+          {
+            symbol: "BTC/USDT",
+            exchange: "Binance → OKX",
+            spread: "0.42%",
+            amount: "125.80 USDT"
+          },
+          {
+            symbol: "ETH/USDT",
+            exchange: "Bybit → Binance",
+            spread: "0.31%",
+            amount: "86.40 USDT"
+          },
+          {
+            symbol: "SOL/USDT",
+            exchange: "OKX → Bybit",
+            spread: "0.27%",
+            amount: "54.20 USDT"
+          }
+        ];
+
+        opportunityCount.textContent = data.length;
+        connection.textContent = "已连接";
+        running.textContent = "监控中";
+        setStatus("扫描完成，发现 " + data.length + " 个机会", "ok");
+
+        opportunities.innerHTML = data.map(function (item) {
+          return `
+            <div class="opportunity">
+              <strong>${item.symbol}</strong><br>
+              交易方向：${item.exchange}<br>
+              预计价差：${item.spread}<br>
+              建议金额：${item.amount}
+            </div>
+          `;
+        }).join("");
+
+        profit.textContent = "＋12.68 USDT";
+        log("扫描完成，发现 " + data.length + " 个模拟机会");
+        finish();
+      }, 1200);
+    });
+
+    $("balanceButton").addEventListener("click", function () {
+      const finish = setButtonLoading(
+        $("balanceButton"),
+        "查询中……",
+        "💰 查询余额"
+      );
+
+      log("正在查询账户余额");
+      setStatus("正在查询余额……");
+
+      setTimeout(function () {
+        balance.textContent =
+`账户：模拟账户
+USDT：1,280.50
+BTC：0.0154
+ETH：0.4200
+更新时间：${new Date().toLocaleString()}`;
+
+        connection.textContent = "已连接";
+        setStatus("余额查询成功", "ok");
+        log("余额查询成功");
+        finish();
+      }, 900);
+    });
+
+    $("stopButton").addEventListener("click", function () {
+      const confirmed = confirm(
+        "确定要执行全局急停吗？急停后需要刷新页面才能恢复。"
+      );
+
+      if (!confirmed) {
+        log("已取消全局急停");
+        return;
+      }
+
+      isStopped = true;
+      running.textContent = "已急停";
+      setStatus("全局急停已执行", "error");
+      log("警告：全局急停已执行，所有模拟交易操作已停止");
+    });
+
+    const savedUrl = localStorage.getItem("backendUrl");
+
+    if (savedUrl) {
+      backendUrl.value = savedUrl;
+      connection.textContent = "地址已保存";
+      log("已加载之前保存的后台地址");
+    }
+  </script>
+</body>
+</html>
